@@ -4,7 +4,8 @@ class ChatModel {
   final String otherUserId;
   final String? lastMessage;
   final DateTime? lastMessageTime;
-  final DateTime createdAt;
+  final int unreadCount;
+  final Map<String, dynamic>? otherUser;
 
   ChatModel({
     required this.id,
@@ -12,7 +13,8 @@ class ChatModel {
     required this.otherUserId,
     this.lastMessage,
     this.lastMessageTime,
-    required this.createdAt,
+    this.unreadCount = 0,
+    this.otherUser,
   });
 
   factory ChatModel.fromJson(Map<String, dynamic> json) {
@@ -21,8 +23,11 @@ class ChatModel {
       userId: json['user_id'],
       otherUserId: json['other_user_id'],
       lastMessage: json['last_message'],
-      lastMessageTime: json['last_message_time'] != null ? DateTime.parse(json['last_message_time']) : null,
-      createdAt: DateTime.parse(json['created_at']),
+      lastMessageTime: json['last_message_time'] != null
+          ? DateTime.parse(json['last_message_time'])
+          : null,
+      unreadCount: json['unread_count'] ?? 0,
+      otherUser: json['other_user'],
     );
   }
 
@@ -33,7 +38,14 @@ class ChatModel {
       'other_user_id': otherUserId,
       'last_message': lastMessage,
       'last_message_time': lastMessageTime?.toIso8601String(),
-      'created_at': createdAt.toIso8601String(),
+      'unread_count': unreadCount,
     };
+  }
+
+  String getOtherParticipantName(String currentUserId) {
+    if (otherUser != null) {
+      return otherUser!['name'] ?? otherUser!['full_name'] ?? 'مستخدم';
+    }
+    return 'مستخدم';
   }
 }

@@ -17,6 +17,10 @@ class WalletModel {
     this.updatedAt,
   });
 
+  double get yemeniRial => yerBalance;
+  double get saudiRiyal => sarBalance;
+  double get usDollar => usdBalance;
+
   factory WalletModel.fromJson(Map<String, dynamic> json) {
     return WalletModel(
       id: json['id'],

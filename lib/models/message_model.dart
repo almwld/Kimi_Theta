@@ -22,7 +22,7 @@ class MessageModel {
       id: json['id'],
       chatId: json['chat_id'],
       senderId: json['sender_id'],
-      content: json['content'],
+      content: json['content'] ?? '',
       imageUrl: json['image_url'],
       isRead: json['is_read'] ?? false,
       createdAt: DateTime.parse(json['created_at']),

@@ -4,8 +4,10 @@ class NotificationModel {
   final String title;
   final String body;
   final String? type;
+  final String? targetId;
   final bool isRead;
   final DateTime createdAt;
+  final String? imageUrl;
 
   NotificationModel({
     required this.id,
@@ -13,8 +15,10 @@ class NotificationModel {
     required this.title,
     required this.body,
     this.type,
+    this.targetId,
     this.isRead = false,
     required this.createdAt,
+    this.imageUrl,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -24,8 +28,10 @@ class NotificationModel {
       title: json['title'],
       body: json['body'],
       type: json['type'],
+      targetId: json['target_id'],
       isRead: json['is_read'] ?? false,
       createdAt: DateTime.parse(json['created_at']),
+      imageUrl: json['image_url'],
     );
   }
 
@@ -36,8 +42,10 @@ class NotificationModel {
       'title': title,
       'body': body,
       'type': type,
+      'target_id': targetId,
       'is_read': isRead,
       'created_at': createdAt.toIso8601String(),
+      'image_url': imageUrl,
     };
   }
 }

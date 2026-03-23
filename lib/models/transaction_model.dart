@@ -7,6 +7,7 @@ class TransactionModel {
   final String? description;
   final String? recipientId;
   final DateTime createdAt;
+  final Map<String, dynamic>? recipient;
 
   TransactionModel({
     required this.id,
@@ -17,6 +18,7 @@ class TransactionModel {
     this.description,
     this.recipientId,
     required this.createdAt,
+    this.recipient,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -29,19 +31,7 @@ class TransactionModel {
       description: json['description'],
       recipientId: json['recipient_id'],
       createdAt: DateTime.parse(json['created_at']),
+      recipient: json['recipient'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'user_id': userId,
-      'type': type,
-      'amount': amount,
-      'currency': currency,
-      'description': description,
-      'recipient_id': recipientId,
-      'created_at': createdAt.toIso8601String(),
-    };
   }
 }

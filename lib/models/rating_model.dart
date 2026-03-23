@@ -6,6 +6,7 @@ class RatingModel {
   final String? comment;
   final List<String>? images;
   final DateTime createdAt;
+  final Map<String, dynamic>? user;
 
   RatingModel({
     required this.id,
@@ -15,6 +16,7 @@ class RatingModel {
     this.comment,
     this.images,
     required this.createdAt,
+    this.user,
   });
 
   factory RatingModel.fromJson(Map<String, dynamic> json) {
@@ -26,18 +28,7 @@ class RatingModel {
       comment: json['comment'],
       images: json['images'] != null ? List<String>.from(json['images']) : null,
       createdAt: DateTime.parse(json['created_at']),
+      user: json['user'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'user_id': userId,
-      'product_id': productId,
-      'rating': rating,
-      'comment': comment,
-      'images': images,
-      'created_at': createdAt.toIso8601String(),
-    };
   }
 }

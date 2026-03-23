@@ -5,8 +5,9 @@ class OrderModel {
   final String status;
   final String? shippingAddress;
   final String? paymentMethod;
-  final String? paymentStatus;
   final DateTime createdAt;
+  final List<OrderItem> items;
+  final Map<String, dynamic>? seller; // for UI
 
   OrderModel({
     required this.id,
@@ -15,8 +16,9 @@ class OrderModel {
     required this.status,
     this.shippingAddress,
     this.paymentMethod,
-    this.paymentStatus,
     required this.createdAt,
+    this.items = const [],
+    this.seller,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -27,8 +29,9 @@ class OrderModel {
       status: json['status'],
       shippingAddress: json['shipping_address'],
       paymentMethod: json['payment_method'],
-      paymentStatus: json['payment_status'],
       createdAt: DateTime.parse(json['created_at']),
+      items: (json['items'] as List?)?.map((e) => OrderItem.fromJson(e)).toList() ?? [],
+      seller: json['seller'],
     );
   }
 
@@ -40,8 +43,33 @@ class OrderModel {
       'status': status,
       'shipping_address': shippingAddress,
       'payment_method': paymentMethod,
-      'payment_status': paymentStatus,
       'created_at': createdAt.toIso8601String(),
     };
+  }
+}
+
+class OrderItem {
+  final String productId;
+  final String productName;
+  final int quantity;
+  final double price;
+  final String? imageUrl;
+
+  OrderItem({
+    required this.productId,
+    required this.productName,
+    required this.quantity,
+    required this.price,
+    this.imageUrl,
+  });
+
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      productId: json['product_id'],
+      productName: json['product_name'],
+      quantity: json['quantity'],
+      price: (json['price'] as num).toDouble(),
+      imageUrl: json['image_url'],
+    );
   }
 }
