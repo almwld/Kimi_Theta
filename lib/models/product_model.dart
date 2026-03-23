@@ -1,103 +1,44 @@
-// نموذج المنتج
-import 'package:hive/hive.dart';
+import 'package:equatable/equatable.dart';
 
-part 'product_model.g.dart';
-
-@HiveType(typeId: 2)
-class ProductModel {
-  @HiveField(0)
+class ProductModel extends Equatable {
   final String id;
-  
-  @HiveField(1)
   final String title;
-  
-  @HiveField(2)
   final String description;
-  
-  @HiveField(3)
   final double price;
-  
-  @HiveField(4)
   final double? oldPrice;
-  
-  @HiveField(5)
-  final List<String> images;
-  
-  @HiveField(6)
   final String category;
-  
-  @HiveField(7)
-  final String subCategory;
-  
-  @HiveField(8)
-  final String condition;
-  
-  @HiveField(9)
   final String city;
-  
-  @HiveField(10)
+  final List<String> images;
   final String sellerId;
-  
-  @HiveField(11)
   final String sellerName;
-  
-  @HiveField(12)
   final String? sellerAvatar;
-  
-  @HiveField(13)
   final double sellerRating;
-  
-  @HiveField(14)
   final DateTime createdAt;
-  
-  @HiveField(15)
   final bool isFeatured;
-  
-  @HiveField(16)
   final bool isAuction;
-  
-  @HiveField(17)
   final DateTime? auctionEndTime;
-  
-  @HiveField(18)
   final double? currentBid;
-  
-  @HiveField(19)
   final int viewsCount;
-  
-  @HiveField(20)
   final int favoritesCount;
-  
-  @HiveField(21)
   final double rating;
-  
-  @HiveField(22)
   final int reviewsCount;
-  
-  @HiveField(23)
   final bool hasWarranty;
-  
-  @HiveField(24)
   final bool hasShipping;
-  
-  @HiveField(25)
-  final bool is negotiable;
+  final bool isNegotiable;
 
-  ProductModel({
+  const ProductModel({
     required this.id,
     required this.title,
     required this.description,
     required this.price,
     this.oldPrice,
-    required this.images,
     required this.category,
-    required this.subCategory,
-    required this.condition,
     required this.city,
+    required this.images,
     required this.sellerId,
     required this.sellerName,
     this.sellerAvatar,
-    required this.sellerRating,
+    this.sellerRating = 0.0,
     required this.createdAt,
     this.isFeatured = false,
     this.isAuction = false,
@@ -109,41 +50,35 @@ class ProductModel {
     this.reviewsCount = 0,
     this.hasWarranty = false,
     this.hasShipping = false,
-    this.is negotiable = false,
+    this.isNegotiable = false,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      price: (json['price'] ?? 0.0).toDouble(),
-      oldPrice: json['old_price']?.toDouble(),
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      price: (json['price'] as num).toDouble(),
+      oldPrice: json['oldPrice'] != null ? (json['oldPrice'] as num).toDouble() : null,
+      category: json['category'],
+      city: json['city'],
       images: List<String>.from(json['images'] ?? []),
-      category: json['category'] ?? '',
-      subCategory: json['sub_category'] ?? '',
-      condition: json['condition'] ?? 'new',
-      city: json['city'] ?? '',
-      sellerId: json['seller_id'] ?? '',
-      sellerName: json['seller_name'] ?? '',
-      sellerAvatar: json['seller_avatar'],
-      sellerRating: (json['seller_rating'] ?? 0.0).toDouble(),
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
-          : DateTime.now(),
-      isFeatured: json['is_featured'] ?? false,
-      isAuction: json['is_auction'] ?? false,
-      auctionEndTime: json['auction_end_time'] != null 
-          ? DateTime.parse(json['auction_end_time']) 
-          : null,
-      currentBid: json['current_bid']?.toDouble(),
-      viewsCount: json['views_count'] ?? 0,
-      favoritesCount: json['favorites_count'] ?? 0,
-      rating: (json['rating'] ?? 0.0).toDouble(),
-      reviewsCount: json['reviews_count'] ?? 0,
-      hasWarranty: json['has_warranty'] ?? false,
-      hasShipping: json['has_shipping'] ?? false,
-      is negotiable: json['is_negotiable'] ?? false,
+      sellerId: json['sellerId'],
+      sellerName: json['sellerName'],
+      sellerAvatar: json['sellerAvatar'],
+      sellerRating: (json['sellerRating'] as num?)?.toDouble() ?? 0.0,
+      createdAt: DateTime.parse(json['createdAt']),
+      isFeatured: json['isFeatured'] ?? false,
+      isAuction: json['isAuction'] ?? false,
+      auctionEndTime: json['auctionEndTime'] != null ? DateTime.parse(json['auctionEndTime']) : null,
+      currentBid: json['currentBid'] != null ? (json['currentBid'] as num).toDouble() : null,
+      viewsCount: json['viewsCount'] ?? 0,
+      favoritesCount: json['favoritesCount'] ?? 0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewsCount: json['reviewsCount'] ?? 0,
+      hasWarranty: json['hasWarranty'] ?? false,
+      hasShipping: json['hasShipping'] ?? false,
+      isNegotiable: json['isNegotiable'] ?? false,
     );
   }
 
@@ -153,35 +88,136 @@ class ProductModel {
       'title': title,
       'description': description,
       'price': price,
-      'old_price': oldPrice,
-      'images': images,
+      'oldPrice': oldPrice,
       'category': category,
-      'sub_category': subCategory,
-      'condition': condition,
       'city': city,
-      'seller_id': sellerId,
-      'seller_name': sellerName,
-      'seller_avatar': sellerAvatar,
-      'seller_rating': sellerRating,
-      'created_at': createdAt.toIso8601String(),
-      'is_featured': isFeatured,
-      'is_auction': isAuction,
-      'auction_end_time': auctionEndTime?.toIso8601String(),
-      'current_bid': currentBid,
-      'views_count': viewsCount,
-      'favorites_count': favoritesCount,
+      'images': images,
+      'sellerId': sellerId,
+      'sellerName': sellerName,
+      'sellerAvatar': sellerAvatar,
+      'sellerRating': sellerRating,
+      'createdAt': createdAt.toIso8601String(),
+      'isFeatured': isFeatured,
+      'isAuction': isAuction,
+      'auctionEndTime': auctionEndTime?.toIso8601String(),
+      'currentBid': currentBid,
+      'viewsCount': viewsCount,
+      'favoritesCount': favoritesCount,
       'rating': rating,
-      'reviews_count': reviewsCount,
-      'has_warranty': hasWarranty,
-      'has_shipping': hasShipping,
-      'is_negotiable': is negotiable,
+      'reviewsCount': reviewsCount,
+      'hasWarranty': hasWarranty,
+      'hasShipping': hasShipping,
+      'isNegotiable': isNegotiable,
     };
   }
 
-  double get discountPercentage {
-    if (oldPrice == null || oldPrice == 0) return 0;
-    return ((oldPrice! - price) / oldPrice! * 100).roundToDouble();
+  ProductModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    double? price,
+    double? oldPrice,
+    String? category,
+    String? city,
+    List<String>? images,
+    String? sellerId,
+    String? sellerName,
+    String? sellerAvatar,
+    double? sellerRating,
+    DateTime? createdAt,
+    bool? isFeatured,
+    bool? isAuction,
+    DateTime? auctionEndTime,
+    double? currentBid,
+    int? viewsCount,
+    int? favoritesCount,
+    double? rating,
+    int? reviewsCount,
+    bool? hasWarranty,
+    bool? hasShipping,
+    bool? isNegotiable,
+  }) {
+    return ProductModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      oldPrice: oldPrice ?? this.oldPrice,
+      category: category ?? this.category,
+      city: city ?? this.city,
+      images: images ?? this.images,
+      sellerId: sellerId ?? this.sellerId,
+      sellerName: sellerName ?? this.sellerName,
+      sellerAvatar: sellerAvatar ?? this.sellerAvatar,
+      sellerRating: sellerRating ?? this.sellerRating,
+      createdAt: createdAt ?? this.createdAt,
+      isFeatured: isFeatured ?? this.isFeatured,
+      isAuction: isAuction ?? this.isAuction,
+      auctionEndTime: auctionEndTime ?? this.auctionEndTime,
+      currentBid: currentBid ?? this.currentBid,
+      viewsCount: viewsCount ?? this.viewsCount,
+      favoritesCount: favoritesCount ?? this.favoritesCount,
+      rating: rating ?? this.rating,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      hasWarranty: hasWarranty ?? this.hasWarranty,
+      hasShipping: hasShipping ?? this.hasShipping,
+      isNegotiable: isNegotiable ?? this.isNegotiable,
+    );
   }
 
-  bool get isOnSale => oldPrice != null && oldPrice! > price;
+  String get formattedPrice {
+    if (price >= 1000000) {
+      return '${(price / 1000000).toStringAsFixed(1)}M';
+    } else if (price >= 1000) {
+      return '${(price / 1000).toStringAsFixed(0)}K';
+    }
+    return price.toStringAsFixed(0);
+  }
+
+  String get timeAgo {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+
+    if (difference.inDays > 365) {
+      return 'منذ ${difference.inDays ~/ 365} سنة';
+    } else if (difference.inDays > 30) {
+      return 'منذ ${difference.inDays ~/ 30} شهر';
+    } else if (difference.inDays > 0) {
+      return 'منذ ${difference.inDays} يوم';
+    } else if (difference.inHours > 0) {
+      return 'منذ ${difference.inHours} ساعة';
+    } else if (difference.inMinutes > 0) {
+      return 'منذ ${difference.inMinutes} دقيقة';
+    } else {
+      return 'الآن';
+    }
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        title,
+        description,
+        price,
+        oldPrice,
+        category,
+        city,
+        images,
+        sellerId,
+        sellerName,
+        sellerAvatar,
+        sellerRating,
+        createdAt,
+        isFeatured,
+        isAuction,
+        auctionEndTime,
+        currentBid,
+        viewsCount,
+        favoritesCount,
+        rating,
+        reviewsCount,
+        hasWarranty,
+        hasShipping,
+        isNegotiable,
+      ];
 }
