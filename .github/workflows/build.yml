@@ -1,4 +1,3 @@
-# GitHub Actions Workflow - Build Android APK only
 name: Build Android APK
 
 on:
@@ -26,6 +25,13 @@ jobs:
       with:
         flutter-version: '3.19.0'
         channel: 'stable'
+
+    - name: Recreate Android project
+      run: |
+        flutter create --project-name=flex_yemen_temp --org com.flexyemen ./temp_project
+        rm -rf android
+        cp -r temp_project/android .
+        rm -rf temp_project
 
     - name: Install dependencies
       run: flutter pub get
