@@ -60,7 +60,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   hintStyle: TextStyle(
                     fontFamily: 'Tajawal',
                     fontSize: 14,
-                    color: isDark ? Colors.white40 : Colors.black38,
+                    color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.38),
                   ),
                   prefixIcon: Icon(
                     Icons.search,
@@ -70,7 +70,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ? IconButton(
                           icon: Icon(
                             Icons.clear,
-                            color: isDark ? Colors.white40 : Colors.black38,
+                            color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.38),
                           ),
                           onPressed: () {
                             setState(() {

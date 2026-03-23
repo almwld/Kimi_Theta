@@ -218,7 +218,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           hintStyle: TextStyle(
                             fontFamily: 'Tajawal',
                             fontSize: 14,
-                            color: isDark ? Colors.white40 : Colors.black38,
+                            color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.38),
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(

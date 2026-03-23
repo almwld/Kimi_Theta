@@ -275,7 +275,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontFamily: 'Tajawal',
                           fontSize: 14,
-                          color: isDark ? Colors.white40 : Colors.black38,
+                          color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.38),
                         ),
                       ),
                     ),

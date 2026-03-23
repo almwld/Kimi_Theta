@@ -232,7 +232,7 @@ class NotificationService {
     // iOS فقط
     await _localNotifications
         .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.setBadgeCount(count);
+        // ?.setBadgeCount(count);
   }
 }
 

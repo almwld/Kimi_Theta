@@ -1,6 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-class ProductModel extends Equatable {
+class ProductModel {
   final String id;
   final String title;
   final String description;
@@ -26,7 +24,7 @@ class ProductModel extends Equatable {
   final bool hasShipping;
   final bool isNegotiable;
 
-  const ProductModel({
+  ProductModel({
     required this.id,
     required this.title,
     required this.description,
@@ -110,114 +108,4 @@ class ProductModel extends Equatable {
       'isNegotiable': isNegotiable,
     };
   }
-
-  ProductModel copyWith({
-    String? id,
-    String? title,
-    String? description,
-    double? price,
-    double? oldPrice,
-    String? category,
-    String? city,
-    List<String>? images,
-    String? sellerId,
-    String? sellerName,
-    String? sellerAvatar,
-    double? sellerRating,
-    DateTime? createdAt,
-    bool? isFeatured,
-    bool? isAuction,
-    DateTime? auctionEndTime,
-    double? currentBid,
-    int? viewsCount,
-    int? favoritesCount,
-    double? rating,
-    int? reviewsCount,
-    bool? hasWarranty,
-    bool? hasShipping,
-    bool? isNegotiable,
-  }) {
-    return ProductModel(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      price: price ?? this.price,
-      oldPrice: oldPrice ?? this.oldPrice,
-      category: category ?? this.category,
-      city: city ?? this.city,
-      images: images ?? this.images,
-      sellerId: sellerId ?? this.sellerId,
-      sellerName: sellerName ?? this.sellerName,
-      sellerAvatar: sellerAvatar ?? this.sellerAvatar,
-      sellerRating: sellerRating ?? this.sellerRating,
-      createdAt: createdAt ?? this.createdAt,
-      isFeatured: isFeatured ?? this.isFeatured,
-      isAuction: isAuction ?? this.isAuction,
-      auctionEndTime: auctionEndTime ?? this.auctionEndTime,
-      currentBid: currentBid ?? this.currentBid,
-      viewsCount: viewsCount ?? this.viewsCount,
-      favoritesCount: favoritesCount ?? this.favoritesCount,
-      rating: rating ?? this.rating,
-      reviewsCount: reviewsCount ?? this.reviewsCount,
-      hasWarranty: hasWarranty ?? this.hasWarranty,
-      hasShipping: hasShipping ?? this.hasShipping,
-      isNegotiable: isNegotiable ?? this.isNegotiable,
-    );
-  }
-
-  String get formattedPrice {
-    if (price >= 1000000) {
-      return '${(price / 1000000).toStringAsFixed(1)}M';
-    } else if (price >= 1000) {
-      return '${(price / 1000).toStringAsFixed(0)}K';
-    }
-    return price.toStringAsFixed(0);
-  }
-
-  String get timeAgo {
-    final now = DateTime.now();
-    final difference = now.difference(createdAt);
-
-    if (difference.inDays > 365) {
-      return 'منذ ${difference.inDays ~/ 365} سنة';
-    } else if (difference.inDays > 30) {
-      return 'منذ ${difference.inDays ~/ 30} شهر';
-    } else if (difference.inDays > 0) {
-      return 'منذ ${difference.inDays} يوم';
-    } else if (difference.inHours > 0) {
-      return 'منذ ${difference.inHours} ساعة';
-    } else if (difference.inMinutes > 0) {
-      return 'منذ ${difference.inMinutes} دقيقة';
-    } else {
-      return 'الآن';
-    }
-  }
-
-  @override
-  List<Object?> get props => [
-        id,
-        title,
-        description,
-        price,
-        oldPrice,
-        category,
-        city,
-        images,
-        sellerId,
-        sellerName,
-        sellerAvatar,
-        sellerRating,
-        createdAt,
-        isFeatured,
-        isAuction,
-        auctionEndTime,
-        currentBid,
-        viewsCount,
-        favoritesCount,
-        rating,
-        reviewsCount,
-        hasWarranty,
-        hasShipping,
-        isNegotiable,
-      ];
 }

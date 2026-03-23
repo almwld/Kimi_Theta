@@ -81,7 +81,7 @@ class ChatScreen extends StatelessWidget {
                   hintStyle: TextStyle(
                     fontFamily: 'Tajawal',
                     fontSize: 14,
-                    color: isDark ? Colors.white40 : Colors.black38,
+                    color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.38),
                   ),
                   prefixIcon: Icon(
                     Icons.search,
@@ -182,7 +182,7 @@ class ChatScreen extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'Tajawal',
               fontSize: 12,
-              color: isDark ? Colors.white40 : Colors.black38,
+              color: isDark ? Colors.white.withOpacity(0.4) : Colors.black.withOpacity(0.38),
             ),
           ),
           if (unreadCount > 0) ...[

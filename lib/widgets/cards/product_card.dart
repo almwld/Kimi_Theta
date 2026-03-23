@@ -167,7 +167,7 @@ class ProductCard extends StatelessWidget {
                               ? Colors.red
                               : (isDark
                                   ? Colors.white54
-                                  : Colors.black38),
+                                  : Colors.black.withOpacity(0.38)),
                           size: 18,
                         ),
                       ),
@@ -235,7 +235,7 @@ class ProductCard extends StatelessWidget {
                           fontSize: 11,
                           color: isDark
                               ? Colors.white38
-                              : Colors.black38,
+                              : Colors.black.withOpacity(0.38),
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -251,7 +251,7 @@ class ProductCard extends StatelessWidget {
                           size: 14,
                           color: isDark
                               ? Colors.white38
-                              : Colors.black38,
+                              : Colors.black.withOpacity(0.38),
                         ),
                         SizedBox(width: 4),
                         Expanded(
@@ -262,7 +262,7 @@ class ProductCard extends StatelessWidget {
                               fontSize: 11,
                               color: isDark
                                   ? Colors.white38
-                                  : Colors.black38,
+                                  : Colors.black.withOpacity(0.38),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

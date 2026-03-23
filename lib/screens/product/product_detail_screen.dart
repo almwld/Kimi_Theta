@@ -132,7 +132,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               style: TextStyle(
                                 fontFamily: 'Tajawal',
                                 fontSize: 14,
-                                color: isDark ? Colors.white38 : Colors.black38,
+                                color: isDark ? Colors.white38 : Colors.black.withOpacity(0.38),
                                 decoration: TextDecoration.lineThrough,
                               ),
                             ),

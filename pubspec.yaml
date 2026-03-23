@@ -56,9 +56,6 @@ dependencies:
   uuid: ^4.3.3
   logger: ^2.0.2
   dio: ^5.4.0
-  retrofit: ^4.0.3
-  json_annotation: ^4.8.1
-  freezed_annotation: ^2.4.1
 
 dev_dependencies:
   flutter_test:
@@ -66,9 +63,6 @@ dev_dependencies:
   flutter_lints: ^3.0.1
   build_runner: ^2.4.8
   json_serializable: ^6.7.1
-  freezed: ^2.4.6
-  retrofit_generator: ^8.0.6
-  hive_generator: ^2.0.1
 
 flutter:
   uses-material-design: true

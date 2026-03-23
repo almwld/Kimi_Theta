@@ -95,7 +95,7 @@ class CustomTextField extends StatelessWidget {
             hintStyle: TextStyle(
               fontFamily: 'Tajawal',
               fontSize: 14,
-              color: isDark ? Colors.white54 : Colors.black38,
+              color: isDark ? Colors.white54 : Colors.black.withOpacity(0.38),
             ),
             prefixIcon: prefixIcon != null
                 ? IconTheme(
@@ -241,7 +241,7 @@ class SearchTextField extends StatelessWidget {
           hintStyle: TextStyle(
             fontFamily: 'Tajawal',
             fontSize: 14,
-            color: isDark ? Colors.white54 : Colors.black38,
+            color: isDark ? Colors.white54 : Colors.black.withOpacity(0.38),
           ),
           prefixIcon: Icon(
             Icons.search,
@@ -251,7 +251,7 @@ class SearchTextField extends StatelessWidget {
               ? IconButton(
                   icon: Icon(
                     Icons.clear,
-                    color: isDark ? Colors.white54 : Colors.black38,
+                    color: isDark ? Colors.white54 : Colors.black.withOpacity(0.38),
                   ),
                   onPressed: () {
                     controller?.clear();
