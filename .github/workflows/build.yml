@@ -1,0 +1,124 @@
+# GitHub Actions Workflow لبناء تطبيق Flutter
+name: Flutter Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout الكود
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    # إعداد Java
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    # إعداد Flutter
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+    
+    # تثبيت الاعتماديات
+    - name: Install dependencies
+      run: flutter pub get
+    
+    # تحليل الكود
+    - name: Analyze code
+      run: flutter analyze
+    
+    # تشغيل الاختبارات
+    - name: Run tests
+      run: flutter test
+    
+    # بناء APK
+    - name: Build APK
+      run: flutter build apk --release
+    
+    # بناء AAB
+    - name: Build AAB
+      run: flutter build appbundle --release
+    
+    # رفع الملفات كـ Artifacts
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
+    
+    - name: Upload AAB
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-aab
+        path: build/app/outputs/bundle/release/app-release.aab
+
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    # Checkout الكود
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    # إعداد Flutter
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+    
+    # تثبيت الاعتماديات
+    - name: Install dependencies
+      run: flutter pub get
+    
+    # بناء iOS
+    - name: Build iOS
+      run: flutter build ios --release --no-codesign
+    
+    # رفع الملفات كـ Artifacts
+    - name: Upload iOS build
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-ios
+        path: build/ios/iphoneos/Runner.app
+
+  build-web:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout الكود
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    # إعداد Flutter
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+    
+    # تثبيت الاعتماديات
+    - name: Install dependencies
+      run: flutter pub get
+    
+    # بناء الويب
+    - name: Build Web
+      run: flutter build web --release
+    
+    # رفع الملفات كـ Artifacts
+    - name: Upload Web build
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-web
+        path: build/web
