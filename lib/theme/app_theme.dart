@@ -6,6 +6,7 @@ class AppTheme {
   static const Color goldLight = Color(0xFFF4D03F);
   static const Color goldDark = Color(0xFFB8860B);
   static const Color goldAccent = Color(0xFFE5C100);
+  static const Color goldPrimary = goldColor; // alias
   static const Color error = Color(0xFFE74C3C);
   static const Color success = Color(0xFF2ECC71);
   static const Color warning = Color(0xFFF39C12);
@@ -22,6 +23,8 @@ class AppTheme {
   // ألوان النصوص
   static const Color lightText = Color(0xFF666666);
   static const Color darkText = Color(0xFFCCCCCC);
+  static const Color lightTextSecondary = Color(0xFF888888);
+  static const Color darkTextSecondary = Color(0xFFAAAAAA);
 
   // التدرج الذهبي
   static const LinearGradient goldGradient = LinearGradient(
@@ -30,12 +33,21 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  // ظل ذهبي
-  static const BoxShadow goldShadow = BoxShadow(
-    color: Color(0x33D4AF37),
-    blurRadius: 20,
-    offset: Offset(0, 10),
+  // تدرج البطاقات
+  static const LinearGradient cardGradient = LinearGradient(
+    colors: [goldColor, goldLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
+
+  // ظل ذهبي (قائمة)
+  static List<BoxShadow> goldShadow = [
+    const BoxShadow(
+      color: Color(0x33D4AF37),
+      blurRadius: 20,
+      offset: Offset(0, 10),
+    ),
+  ];
 
   // الثيم الفاتح
   static ThemeData lightTheme = ThemeData(
