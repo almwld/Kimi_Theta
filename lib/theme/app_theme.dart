@@ -42,6 +42,13 @@ class AppTheme {
 
   // ظل ذهبي (قائمة)
   static List<BoxShadow> goldShadow = [
+  static List<BoxShadow> lightShadow = [
+    const BoxShadow(
+      color: Color(0x1A000000),
+      blurRadius: 8,
+      offset: Offset(0, 2),
+    ),
+  ];
     const BoxShadow(
       color: Color(0x33D4AF37),
       blurRadius: 20,
@@ -184,3 +191,12 @@ class AppTheme {
     ),
   );
 }
+
+// إضافة ظل خفيف للاستخدام في الويدجات
+static List<BoxShadow> lightShadow = [
+  const BoxShadow(
+    color: Color(0x1A000000),
+    blurRadius: 8,
+    offset: Offset(0, 2),
+  ),
+];

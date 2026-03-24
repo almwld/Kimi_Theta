@@ -1,74 +1,103 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 class LocalStorageService {
-  static const String _userBox = 'user_box';
-  static const String _settingsBox = 'settings_box';
-  static const String _cartBox = 'cart_box';
+  static const String _userBox = 'userBox';
+  static const String _settingsBox = 'settingsBox';
+  static const String _favoritesBox = 'favoritesBox';
+  static const String _cartBox = 'cartBox';
 
-  static late Box _userBoxInstance;
-  static late Box _settingsBoxInstance;
-  static late Box _cartBoxInstance;
+  late Box _userBoxInstance;
+  late Box _settingsBoxInstance;
+  late Box _favoritesBoxInstance;
+  late Box _cartBoxInstance;
 
-  LocalStorageService._();
-
-  static final LocalStorageService _instance = LocalStorageService._();
+  static final LocalStorageService _instance = LocalStorageService._internal();
   factory LocalStorageService() => _instance;
+  LocalStorageService._internal();
 
-  static Future<void> init() async {
+  Future<void> init() async {
     await Hive.initFlutter();
     _userBoxInstance = await Hive.openBox(_userBox);
     _settingsBoxInstance = await Hive.openBox(_settingsBox);
+    _favoritesBoxInstance = await Hive.openBox(_favoritesBox);
     _cartBoxInstance = await Hive.openBox(_cartBox);
   }
 
-  // User
-  void saveUser(Map<String, dynamic> user) {
-    _userBoxInstance.put('user', user);
+  // ===== المستخدم =====
+  Future<void> saveUser(Map<String, dynamic> user) async {
+    await _userBoxInstance.put('current_user', user);
   }
 
   Map<String, dynamic>? getUser() {
-    return _userBoxInstance.get('user');
+    return _userBoxInstance.get('current_user');
   }
 
-  void clearUser() {
-    _userBoxInstance.delete('user');
+  Future<void> clearUser() async {
+    await _userBoxInstance.delete('current_user');
   }
 
-  // Settings
+  // ===== الإعدادات =====
+  Future<void> setDarkMode(bool isDark) async {
+    await _settingsBoxInstance.put('dark_mode', isDark);
+  }
+
   bool getDarkMode() {
-    return _settingsBoxInstance.get('darkMode', defaultValue: false);
+    return _settingsBoxInstance.get('dark_mode') ?? false;
   }
 
-  void setDarkMode(bool value) {
-    _settingsBoxInstance.put('darkMode', value);
+  Future<void> setLanguage(String lang) async {
+    await _settingsBoxInstance.put('language', lang);
   }
 
   String getLanguage() {
-    return _settingsBoxInstance.get('language', defaultValue: 'ar');
+    return _settingsBoxInstance.get('language') ?? 'ar';
   }
 
-  void setLanguage(String value) {
-    _settingsBoxInstance.put('language', value);
+  // ===== المفضلة =====
+  Future<void> addFavorite(String productId) async {
+    List<String> favs = getFavorites();
+    if (!favs.contains(productId)) {
+      favs.add(productId);
+      await _favoritesBoxInstance.put('favorites', favs);
+    }
   }
 
-  // Cart
-  List<dynamic> getCartItems() {
-    return _cartBoxInstance.get('items', defaultValue: []);
+  Future<void> removeFavorite(String productId) async {
+    List<String> favs = getFavorites();
+    favs.remove(productId);
+    await _favoritesBoxInstance.put('favorites', favs);
   }
 
-  void addToCart(dynamic item) {
-    final items = getCartItems();
-    items.add(item);
-    _cartBoxInstance.put('items', items);
+  List<String> getFavorites() {
+    return _favoritesBoxInstance.get('favorites', defaultValue: <String>[]);
   }
 
-  void removeFromCart(int index) {
-    final items = getCartItems();
-    items.removeAt(index);
-    _cartBoxInstance.put('items', items);
+  bool isFavorite(String productId) {
+    return getFavorites().contains(productId);
   }
 
-  void clearCart() {
-    _cartBoxInstance.delete('items');
+  // ===== سلة التسوق =====
+  Future<void> saveCartItems(List<Map<String, dynamic>> items) async {
+    await _cartBoxInstance.put('cart', items);
+  }
+
+  List<Map<String, dynamic>> getCartItems() {
+    return _cartBoxInstance.get('cart', defaultValue: <Map<String, dynamic>>[]);
+  }
+
+  Future<void> addToCart(Map<String, dynamic> item) async {
+    List<Map<String, dynamic>> cart = getCartItems();
+    cart.add(item);
+    await saveCartItems(cart);
+  }
+
+  Future<void> removeFromCart(String productId) async {
+    List<Map<String, dynamic>> cart = getCartItems();
+    cart.removeWhere((item) => item['productId'] == productId);
+    await saveCartItems(cart);
+  }
+
+  Future<void> clearCart() async {
+    await _cartBoxInstance.delete('cart');
   }
 }

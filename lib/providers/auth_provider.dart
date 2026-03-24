@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
-import '../services/supabase_service.dart';
+import '../models/user_model.dart';
 import '../services/local_storage_service.dart';
+import '../services/supabase_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final LocalStorageService _localStorage = LocalStorageService();
-  Map<String, dynamic>? _currentUser;
+  final SupabaseService _supabase = SupabaseService();
+
+  UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
 
-  Map<String, dynamic>? get currentUser => _currentUser;
+  UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _currentUser != null;
 
-  AuthProvider() {
-    _loadUser();
-  }
-
-  Future<void> _loadUser() async {
-    _currentUser = _localStorage.getUser();
-    if (_currentUser == null && SupabaseService.isAuthenticated) {
-      final userData = await SupabaseService.getUser(SupabaseService.currentUser!.id);
-      if (userData != null) {
-        _currentUser = userData;
-        await _localStorage.saveUser(userData);
-      }
+  Future<void> init() async {
+    final userMap = _localStorage.getUser();
+    if (userMap != null) {
+      _currentUser = UserModel.fromJson(userMap);
     }
     notifyListeners();
   }
@@ -35,26 +30,22 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await SupabaseService.signIn(email, password);
-      final userData = await SupabaseService.getUser(response.user!.id);
-      if (userData != null) {
-        _currentUser = userData;
-        await _localStorage.saveUser(userData);
-        _error = null;
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = 'لم نتمكن من العثور على بيانات المستخدم';
-        _isLoading = false;
-        notifyListeners();
-        return false;
+      final response = await _supabase.signIn(email, password);
+      if (response.user != null) {
+        final userData = await _supabase.getUser(response.user!.id);
+        if (userData != null) {
+          _currentUser = UserModel.fromJson(userData);
+          await _localStorage.saveUser(userData);
+          return true;
+        }
       }
+      return false;
     } catch (e) {
       _error = e.toString();
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
@@ -64,73 +55,71 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await SupabaseService.signUp(email, password, data: userData);
-      // After signup, we might need to create profile. For now, just return.
-      _isLoading = false;
-      notifyListeners();
-      return true;
+      final response = await _supabase.signUp(email, password, data: userData);
+      if (response.user != null) {
+        // إنشاء المحفظة
+        await _supabase.createWallet(response.user!.id);
+        // جلب بيانات المستخدم
+        final user = await _supabase.getUser(response.user!.id);
+        if (user != null) {
+          _currentUser = UserModel.fromJson(user);
+          await _localStorage.saveUser(user);
+          return true;
+        }
+      }
+      return false;
     } catch (e) {
       _error = e.toString();
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
   Future<void> signOut() async {
-    _isLoading = true;
-    notifyListeners();
-
-    await SupabaseService.signOut();
+    await _supabase.signOut();
     _currentUser = null;
     await _localStorage.clearUser();
-    _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> signInAsGuest() async {
+    _currentUser = UserModel(
+      id: 'guest',
+      email: 'guest@flexyemen.com',
+      name: 'ضيف',
+    );
+    notifyListeners();
+  }
+
+  Future<void> updateProfile(Map<String, dynamic> data) async {
+    if (_currentUser == null) return;
+    try {
+      await _supabase.updateUser(_currentUser!.id, data);
+      final updated = await _supabase.getUser(_currentUser!.id);
+      if (updated != null) {
+        _currentUser = UserModel.fromJson(updated);
+        await _localStorage.saveUser(updated);
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 
   Future<void> resetPassword(String email) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
-
     try {
-      await SupabaseService.resetPassword(email);
-      _isLoading = false;
-      notifyListeners();
+      await _supabase.resetPassword(email);
     } catch (e) {
       _error = e.toString();
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  Future<void> updateProfile(Map<String, dynamic> data) async {
-    if (_currentUser == null) return;
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      await SupabaseService.updateUser(_currentUser!['id'], data);
-      final updated = await SupabaseService.getUser(_currentUser!['id']);
-      if (updated != null) {
-        _currentUser = updated;
-        await _localStorage.saveUser(updated);
-      }
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  void signInAsGuest() {
-    _currentUser = {
-      'id': 'guest',
-      'full_name': 'ضيف',
-      'email': '',
-    };
-    notifyListeners();
   }
 }
