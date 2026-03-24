@@ -6,31 +6,32 @@ class ProductProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _featuredProducts = [];
   Map<String, dynamic>? _selectedProduct;
   List<String> _favoriteIds = [];
-  bool _isLoading = false;
-  String? _error;
   int _currentPage = 0;
   bool _hasMore = true;
+  bool _isLoading = false;
 
   List<Map<String, dynamic>> get products => _products;
   List<Map<String, dynamic>> get featuredProducts => _featuredProducts;
   Map<String, dynamic>? get selectedProduct => _selectedProduct;
   List<String> get favoriteIds => _favoriteIds;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
   bool get hasMore => _hasMore;
+  bool get isLoading => _isLoading;
 
-  Future<void> loadProducts({bool refresh = false}) async {
+  Future<void> loadProducts({bool refresh = false, String? category, String? city}) async {
     if (refresh) {
       _currentPage = 0;
       _products.clear();
       _hasMore = true;
     }
-    if (!_hasMore) return;
+    if (!_hasMore || _isLoading) return;
+
     _isLoading = true;
     notifyListeners();
 
     try {
       final newProducts = await SupabaseService.getProducts(
+        category: category,
+        city: city,
         limit: 20,
         offset: _currentPage * 20,
       );
@@ -40,89 +41,44 @@ class ProductProvider extends ChangeNotifier {
         _products.addAll(newProducts);
         _currentPage++;
       }
-      _isLoading = false;
-      notifyListeners();
     } catch (e) {
-      _error = e.toString();
+      print('Error loading products: $e');
+    } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> loadFeatured() async {
-    if (_featuredProducts.isNotEmpty) return;
-    _isLoading = true;
+  Future<void> loadFeaturedProducts() async {
+    _featuredProducts = await SupabaseService.getProducts(limit: 6);
     notifyListeners();
-
-    try {
-      _featuredProducts = await SupabaseService.getProducts(limit: 6);
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
-  Future<void> loadProduct(String productId) async {
-    _isLoading = true;
+  Future<void> loadProductDetails(String productId) async {
+    _selectedProduct = await SupabaseService.getProduct(productId);
     notifyListeners();
-
-    try {
-      _selectedProduct = await SupabaseService.getProduct(productId);
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
   Future<void> addProduct(Map<String, dynamic> productData) async {
-    _isLoading = true;
+    final newProduct = await SupabaseService.addProduct(productData);
+    _products.insert(0, newProduct);
     notifyListeners();
-
-    try {
-      final newProduct = await SupabaseService.addProduct(productData);
-      _products.insert(0, newProduct);
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
-  Future<void> toggleFavorite(String productId, String userId) async {
-    try {
-      if (_favoriteIds.contains(productId)) {
-        await SupabaseService.removeFromFavorites(userId, productId);
-        _favoriteIds.remove(productId);
-      } else {
-        await SupabaseService.addToFavorites(userId, productId);
-        _favoriteIds.add(productId);
-      }
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
+  Future<void> toggleFavorite(String userId, String productId) async {
+    final isFav = _favoriteIds.contains(productId);
+    if (isFav) {
+      await SupabaseService.removeFromFavorites(userId, productId);
+      _favoriteIds.remove(productId);
+    } else {
+      await SupabaseService.addToFavorites(userId, productId);
+      _favoriteIds.add(productId);
     }
-  }
-
-  bool isFavorite(String productId) {
-    return _favoriteIds.contains(productId);
+    notifyListeners();
   }
 
   Future<void> loadFavorites(String userId) async {
-    try {
-      _favoriteIds = await SupabaseService.getFavorites(userId);
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-    }
+    _favoriteIds = await SupabaseService.getFavorites(userId);
+    notifyListeners();
   }
 }

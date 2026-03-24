@@ -35,9 +35,6 @@ class CartItem {
 }
 
 class OrderProvider extends ChangeNotifier {
-  final LocalStorageService _localStorage = LocalStorageService();
-  final SupabaseService _supabase = SupabaseService();
-
   List<CartItem> _cartItems = [];
   List<Map<String, dynamic>> _orders = [];
 
@@ -45,38 +42,38 @@ class OrderProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get orders => _orders;
 
   Future<void> init() async {
-    final cartData = _localStorage.getCartItems();
+    final cartData = LocalStorageService.getCartItems();
     _cartItems = cartData.map((e) => CartItem.fromJson(e)).toList();
     notifyListeners();
   }
 
   Future<void> loadOrders(String userId) async {
-    _orders = await _supabase.getUserOrders(userId);
+    _orders = await SupabaseService.getUserOrders(userId);
     notifyListeners();
   }
 
   Future<void> addToCart(CartItem item) async {
     _cartItems.add(item);
     final jsonList = _cartItems.map((e) => e.toJson()).toList();
-    await _localStorage.saveCartItems(jsonList);
+    await LocalStorageService.saveCartItems(jsonList);
     notifyListeners();
   }
 
   Future<void> removeFromCart(String productId) async {
     _cartItems.removeWhere((item) => item.productId == productId);
     final jsonList = _cartItems.map((e) => e.toJson()).toList();
-    await _localStorage.saveCartItems(jsonList);
+    await LocalStorageService.saveCartItems(jsonList);
     notifyListeners();
   }
 
   Future<void> clearCart() async {
     _cartItems.clear();
-    await _localStorage.saveCartItems([]);
+    await LocalStorageService.saveCartItems([]);
     notifyListeners();
   }
 
   Future<void> createOrder(Map<String, dynamic> orderData) async {
-    final order = await _supabase.createOrder(orderData);
+    final order = await SupabaseService.createOrder(orderData);
     _orders.insert(0, order);
     await clearCart();
     notifyListeners();

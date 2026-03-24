@@ -4,9 +4,6 @@ import '../services/local_storage_service.dart';
 import '../services/supabase_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final LocalStorageService _localStorage = LocalStorageService();
-  final SupabaseService _supabase = SupabaseService();
-
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
@@ -17,7 +14,7 @@ class AuthProvider extends ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
 
   Future<void> init() async {
-    final userMap = _localStorage.getUser();
+    final userMap = LocalStorageService.getUser();
     if (userMap != null) {
       _currentUser = UserModel.fromJson(userMap);
     }
@@ -30,12 +27,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _supabase.signIn(email, password);
+      final response = await SupabaseService.signIn(email, password);
       if (response.user != null) {
-        final userData = await _supabase.getUser(response.user!.id);
+        final userData = await SupabaseService.getUser(response.user!.id);
         if (userData != null) {
           _currentUser = UserModel.fromJson(userData);
-          await _localStorage.saveUser(userData);
+          await LocalStorageService.saveUser(userData);
           return true;
         }
       }
@@ -55,15 +52,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _supabase.signUp(email, password, data: userData);
+      final response = await SupabaseService.signUp(email, password, data: userData);
       if (response.user != null) {
-        // إنشاء المحفظة
-        await _supabase.createWallet(response.user!.id);
-        // جلب بيانات المستخدم
-        final user = await _supabase.getUser(response.user!.id);
+        await SupabaseService.createWallet(response.user!.id);
+        final user = await SupabaseService.getUser(response.user!.id);
         if (user != null) {
           _currentUser = UserModel.fromJson(user);
-          await _localStorage.saveUser(user);
+          await LocalStorageService.saveUser(user);
           return true;
         }
       }
@@ -78,9 +73,9 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await _supabase.signOut();
+    await SupabaseService.signOut();
     _currentUser = null;
-    await _localStorage.clearUser();
+    await LocalStorageService.clearUser();
     notifyListeners();
   }
 
@@ -96,11 +91,11 @@ class AuthProvider extends ChangeNotifier {
   Future<void> updateProfile(Map<String, dynamic> data) async {
     if (_currentUser == null) return;
     try {
-      await _supabase.updateUser(_currentUser!.id, data);
-      final updated = await _supabase.getUser(_currentUser!.id);
+      await SupabaseService.updateUser(_currentUser!.id, data);
+      final updated = await SupabaseService.getUser(_currentUser!.id);
       if (updated != null) {
         _currentUser = UserModel.fromJson(updated);
-        await _localStorage.saveUser(updated);
+        await LocalStorageService.saveUser(updated);
         notifyListeners();
       }
     } catch (e) {
@@ -114,7 +109,7 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _supabase.resetPassword(email);
+      await SupabaseService.resetPassword(email);
     } catch (e) {
       _error = e.toString();
     } finally {
