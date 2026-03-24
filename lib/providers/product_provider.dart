@@ -82,3 +82,7 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+  bool isFavorite(String productId) {
+    return _favoriteIds.contains(productId);
+  }

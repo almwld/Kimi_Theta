@@ -21,3 +21,7 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 }
+
+  int get unreadCount {
+    return _notifications.where((n) => !n['is_read']).length;
+  }
