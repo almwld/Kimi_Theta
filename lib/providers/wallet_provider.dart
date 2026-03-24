@@ -1,40 +1,71 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
-import '../models/wallet_model.dart';
-import '../models/transaction_model.dart';
 
 class WalletProvider extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
-  WalletModel? _wallet;
-  List<TransactionModel> _transactions = [];
-  List<TransactionModel> _recentTransactions = [];
+  Map<String, dynamic>? _wallet;
+  List<Map<String, dynamic>> _transactions = [];
+  bool _isLoading = false;
+  String? _error;
 
-  WalletModel? get wallet => _wallet;
-  List<TransactionModel> get transactions => _transactions;
-  List<TransactionModel> get recentTransactions => _recentTransactions;
+  Map<String, dynamic>? get wallet => _wallet;
+  List<Map<String, dynamic>> get transactions => _transactions;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  Future<void> fetchWallet(String userId) async {
-    _wallet = await _supabaseService.getWallet(userId);
-    if (_wallet == null) {
-      await _supabaseService.createWallet(userId);
-      _wallet = await _supabaseService.getWallet(userId);
+  double get yerBalance => _wallet != null ? (_wallet!['yer_balance'] ?? 0.0).toDouble() : 0.0;
+  double get sarBalance => _wallet != null ? (_wallet!['sar_balance'] ?? 0.0).toDouble() : 0.0;
+  double get usdBalance => _wallet != null ? (_wallet!['usd_balance'] ?? 0.0).toDouble() : 0.0;
+
+  Future<void> loadWallet(String userId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _wallet = await SupabaseService.getWallet(userId);
+      if (_wallet == null) {
+        await SupabaseService.createWallet(userId);
+        _wallet = await SupabaseService.getWallet(userId);
+      }
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
     }
+  }
+
+  Future<void> loadTransactions(String userId, {int limit = 20}) async {
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      _transactions = await SupabaseService.getTransactions(userId, limit: limit);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> fetchTransactions(String userId, {int limit = 20}) async {
-    _transactions = await _supabaseService.getTransactions(userId, limit: limit);
-    _recentTransactions = _transactions.take(5).toList();
+  Future<bool> updateBalance(String currency, double amount) async {
+    if (_wallet == null) return false;
+    _isLoading = true;
     notifyListeners();
-  }
 
-  Future<void> updateBalance(String walletId, String currency, double amount) async {
-    await _supabaseService.updateBalance(walletId, currency, amount);
-    await fetchWallet(_wallet!.userId);
-  }
-
-  Future<void> createTransaction(Map<String, dynamic> data) async {
-    await _supabaseService.createTransaction(data);
-    await fetchTransactions(_wallet!.userId);
+    try {
+      await SupabaseService.updateBalance(_wallet!['id'], currency, amount);
+      await loadWallet(_wallet!['user_id']);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 }

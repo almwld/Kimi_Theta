@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
-import '../models/product_model.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
-  List<ProductModel> _products = [];
-  List<ProductModel> _featuredProducts = [];
-  ProductModel? _selectedProduct;
+  List<Map<String, dynamic>> _products = [];
+  List<Map<String, dynamic>> _featuredProducts = [];
+  Map<String, dynamic>? _selectedProduct;
   List<String> _favoriteIds = [];
-  int _currentPage = 1;
-  bool _hasMore = true;
   bool _isLoading = false;
+  String? _error;
+  int _currentPage = 0;
+  bool _hasMore = true;
 
-  List<ProductModel> get products => _products;
-  List<ProductModel> get featuredProducts => _featuredProducts;
-  ProductModel? get selectedProduct => _selectedProduct;
+  List<Map<String, dynamic>> get products => _products;
+  List<Map<String, dynamic>> get featuredProducts => _featuredProducts;
+  Map<String, dynamic>? get selectedProduct => _selectedProduct;
   List<String> get favoriteIds => _favoriteIds;
   bool get isLoading => _isLoading;
+  String? get error => _error;
   bool get hasMore => _hasMore;
 
-  Future<void> fetchProducts({String? category, String? city, bool refresh = false}) async {
+  Future<void> loadProducts({bool refresh = false}) async {
     if (refresh) {
-      _currentPage = 1;
+      _currentPage = 0;
       _products.clear();
       _hasMore = true;
     }
@@ -29,68 +29,100 @@ class ProductProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final newProducts = await _supabaseService.getProducts(
-      category: category,
-      city: city,
-      page: _currentPage,
-      limit: 10,
-    );
-
-    if (newProducts.isEmpty) {
-      _hasMore = false;
-    } else {
-      _products.addAll(newProducts);
-      _currentPage++;
-    }
-
-    _isLoading = false;
-    notifyListeners();
-  }
-
-  Future<void> fetchFeaturedProducts() async {
-    _featuredProducts = await _supabaseService.getProducts(limit: 6);
-    notifyListeners();
-  }
-
-  Future<void> fetchProductDetails(String productId) async {
-    _selectedProduct = await _supabaseService.getProduct(productId);
-    notifyListeners();
-  }
-
-  Future<void> addProduct(ProductModel product) async {
-    final newProduct = await _supabaseService.addProduct(product.toJson());
-    _products.insert(0, newProduct);
-    notifyListeners();
-  }
-
-  Future<void> updateProduct(String productId, Map<String, dynamic> data) async {
-    await _supabaseService.updateProduct(productId, data);
-    final index = _products.indexWhere((p) => p.id == productId);
-    if (index != -1) {
-      _products[index] = ProductModel.fromJson(data);
+    try {
+      final newProducts = await SupabaseService.getProducts(
+        limit: 20,
+        offset: _currentPage * 20,
+      );
+      if (newProducts.isEmpty) {
+        _hasMore = false;
+      } else {
+        _products.addAll(newProducts);
+        _currentPage++;
+      }
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteProduct(String productId) async {
-    await _supabaseService.deleteProduct(productId);
-    _products.removeWhere((p) => p.id == productId);
+  Future<void> loadFeatured() async {
+    if (_featuredProducts.isNotEmpty) return;
+    _isLoading = true;
     notifyListeners();
-  }
 
-  Future<void> toggleFavorite(String userId, String productId) async {
-    if (_favoriteIds.contains(productId)) {
-      await _supabaseService.removeFromFavorites(userId, productId);
-      _favoriteIds.remove(productId);
-    } else {
-      await _supabaseService.addToFavorites(userId, productId);
-      _favoriteIds.add(productId);
+    try {
+      _featuredProducts = await SupabaseService.getProducts(limit: 6);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-  Future<void> fetchFavorites(String userId) async {
-    _favoriteIds = await _supabaseService.getFavorites(userId);
+  Future<void> loadProduct(String productId) async {
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      _selectedProduct = await SupabaseService.getProduct(productId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addProduct(Map<String, dynamic> productData) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final newProduct = await SupabaseService.addProduct(productData);
+      _products.insert(0, newProduct);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> toggleFavorite(String productId, String userId) async {
+    try {
+      if (_favoriteIds.contains(productId)) {
+        await SupabaseService.removeFromFavorites(userId, productId);
+        _favoriteIds.remove(productId);
+      } else {
+        await SupabaseService.addToFavorites(userId, productId);
+        _favoriteIds.add(productId);
+      }
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  bool isFavorite(String productId) {
+    return _favoriteIds.contains(productId);
+  }
+
+  Future<void> loadFavorites(String userId) async {
+    try {
+      _favoriteIds = await SupabaseService.getFavorites(userId);
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 }

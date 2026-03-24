@@ -1,44 +1,73 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
-import '../models/chat_model.dart';
-import '../models/message_model.dart';
 
 class ChatProvider extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
-  List<ChatModel> _chats = [];
-  List<MessageModel> _messages = [];
-  ChatModel? _currentChat;
+  List<Map<String, dynamic>> _chats = [];
+  List<Map<String, dynamic>> _messages = [];
+  Map<String, dynamic>? _currentChat;
+  bool _isLoading = false;
+  String? _error;
 
-  List<ChatModel> get chats => _chats;
-  List<MessageModel> get messages => _messages;
-  ChatModel? get currentChat => _currentChat;
+  List<Map<String, dynamic>> get chats => _chats;
+  List<Map<String, dynamic>> get messages => _messages;
+  Map<String, dynamic>? get currentChat => _currentChat;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  Future<void> fetchChats(String userId) async {
-    _chats = await _supabaseService.getChats(userId);
+  Future<void> loadChats(String userId) async {
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      _chats = await SupabaseService.getChats(userId);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> createChat(String userId, String otherUserId) async {
-    final chat = await _supabaseService.createChat(userId, otherUserId);
-    _chats.insert(0, chat);
+    _isLoading = true;
     notifyListeners();
-  }
 
-  Future<void> fetchMessages(String chatId, {int limit = 50}) async {
-    _messages = await _supabaseService.getMessages(chatId, limit: limit);
-    notifyListeners();
-  }
-
-  Future<void> sendMessage(Map<String, dynamic> data) async {
-    final message = await _supabaseService.sendMessage(data);
-    _messages.add(message);
-    notifyListeners();
-  }
-
-  void listenToMessages(String chatId) {
-    _supabaseService.listenToMessages(chatId).listen((messages) {
-      _messages = messages;
+    try {
+      final newChat = await SupabaseService.createChat(userId, otherUserId);
+      _chats.insert(0, newChat);
+      _isLoading = false;
       notifyListeners();
-    });
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMessages(String chatId, {int limit = 50}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _messages = await SupabaseService.getMessages(chatId, limit: limit);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> sendMessage(Map<String, dynamic> messageData) async {
+    try {
+      final newMessage = await SupabaseService.sendMessage(messageData);
+      _messages.add(newMessage);
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 }

@@ -1,105 +1,136 @@
 import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
-import '../models/user_model.dart';
 import '../services/local_storage_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
   final LocalStorageService _localStorage = LocalStorageService();
-  UserModel? _currentUser;
+  Map<String, dynamic>? _currentUser;
   bool _isLoading = false;
+  String? _error;
 
-  UserModel? get currentUser => _currentUser;
-  bool get isAuthenticated => _currentUser != null;
+  Map<String, dynamic>? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get isAuthenticated => _currentUser != null;
 
-  Future<void> init() async {
-    _isLoading = true;
-    notifyListeners();
+  AuthProvider() {
+    _loadUser();
+  }
 
-    final storedUser = _localStorage.getUser();
-    if (storedUser != null) {
-      _currentUser = storedUser;
-    } else if (SupabaseService.isAuthenticated) {
-      final userId = SupabaseService.currentUser!.id;
-      final user = await _supabaseService.getUser(userId);
-      if (user != null) {
-        _currentUser = user;
-        await _localStorage.saveUser(user);
+  Future<void> _loadUser() async {
+    _currentUser = _localStorage.getUser();
+    if (_currentUser == null && SupabaseService.isAuthenticated) {
+      final userData = await SupabaseService.getUser(SupabaseService.currentUser!.id);
+      if (userData != null) {
+        _currentUser = userData;
+        await _localStorage.saveUser(userData);
       }
     }
-
-    _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> signIn(String email, String password) async {
+  Future<bool> signIn(String email, String password) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
+
     try {
-      final response = await _supabaseService.signIn(email, password);
-      final user = await _supabaseService.getUser(response.user!.id);
-      if (user != null) {
-        _currentUser = user;
-        await _localStorage.saveUser(user);
+      final response = await SupabaseService.signIn(email, password);
+      final userData = await SupabaseService.getUser(response.user!.id);
+      if (userData != null) {
+        _currentUser = userData;
+        await _localStorage.saveUser(userData);
+        _error = null;
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _error = 'لم نتمكن من العثور على بيانات المستخدم';
+        _isLoading = false;
+        notifyListeners();
+        return false;
       }
-    } finally {
+    } catch (e) {
+      _error = e.toString();
       _isLoading = false;
       notifyListeners();
+      return false;
     }
   }
 
-  Future<void> signUp(String email, String password, Map<String, dynamic> data) async {
+  Future<bool> signUp(String email, String password, Map<String, dynamic> userData) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
+
     try {
-      final response = await _supabaseService.signUp(email, password, data: data);
-      final user = await _supabaseService.getUser(response.user!.id);
-      if (user != null) {
-        _currentUser = user;
-        await _localStorage.saveUser(user);
-      }
-    } finally {
+      final response = await SupabaseService.signUp(email, password, data: userData);
+      // After signup, we might need to create profile. For now, just return.
       _isLoading = false;
       notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 
   Future<void> signOut() async {
-    await _supabaseService.signOut();
-    await _localStorage.clearUser();
+    _isLoading = true;
+    notifyListeners();
+
+    await SupabaseService.signOut();
     _currentUser = null;
+    await _localStorage.clearUser();
+    _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> updateProfile(Map<String, dynamic> data) async {
-    if (_currentUser == null) return;
-    await _supabaseService.updateUser(_currentUser!.id, data);
-    final updatedUser = await _supabaseService.getUser(_currentUser!.id);
-    if (updatedUser != null) {
-      _currentUser = updatedUser;
-      await _localStorage.saveUser(updatedUser);
+  Future<void> resetPassword(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await SupabaseService.resetPassword(email);
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> updateAvatar(String path) async {
+  Future<void> updateProfile(Map<String, dynamic> data) async {
     if (_currentUser == null) return;
-    final url = await _supabaseService.uploadAvatar(_currentUser!.id, path);
-    await updateProfile({'avatar_url': url});
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await SupabaseService.updateUser(_currentUser!['id'], data);
+      final updated = await SupabaseService.getUser(_currentUser!['id']);
+      if (updated != null) {
+        _currentUser = updated;
+        await _localStorage.saveUser(updated);
+      }
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> resetPassword(String email) async {
-    await _supabaseService.resetPassword(email);
-  }
-
-  // Guest user
-  void setGuestUser() {
-    _currentUser = UserModel(
-      id: 'guest',
-      email: 'guest@example.com',
-      fullName: 'ضيف',
-    );
+  void signInAsGuest() {
+    _currentUser = {
+      'id': 'guest',
+      'full_name': 'ضيف',
+      'email': '',
+    };
     notifyListeners();
   }
 }
