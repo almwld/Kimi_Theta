@@ -19,9 +19,9 @@ class MyOrdersScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final order = orders[index];
                 return ListTile(
-                  title: Text('طلب #${order.id.substring(0, 8)}'),
-                  subtitle: Text(order.status),
-                  trailing: Text('${order.total} ر.ي'),
+                  title: Text('طلب #${order['id']?.substring(0, 8) ?? 'غير معروف'}'),
+                  subtitle: Text(order['status'] ?? ''),
+                  trailing: Text('${order['total']} ر.ي'),
                 );
               },
             ),

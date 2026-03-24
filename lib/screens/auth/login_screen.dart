@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await auth.signIn(_emailController.text, _passwordController.text);
     if (success && mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainNavigation()),
+        MaterialPageRoute(builder: (_) => MainNavigation()),
       );
     }
   }

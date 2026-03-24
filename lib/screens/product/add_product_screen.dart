@@ -410,7 +410,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   value: category['id'],
                   child: Text(category['name']),
                 );
-              }).toList(),
+              }).cast<DropdownMenuItem<String>>().toList(),
               onChanged: (value) {
                 setState(() {
                   _selectedCategory = value!;
@@ -464,7 +464,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   value: city,
                   child: Text(city),
                 );
-              }).toList(),
+              }).cast<DropdownMenuItem<String>>().toList(),
               onChanged: (value) {
                 setState(() {
                   _selectedCity = value!;

@@ -1,38 +1,74 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 class LocalStorageService {
-  static late Box _box;
+  static const String _userBox = 'user_box';
+  static const String _settingsBox = 'settings_box';
+  static const String _cartBox = 'cart_box';
+
+  static late Box _userBoxInstance;
+  static late Box _settingsBoxInstance;
+  static late Box _cartBoxInstance;
+
+  LocalStorageService._();
+
+  static final LocalStorageService _instance = LocalStorageService._();
+  factory LocalStorageService() => _instance;
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    _box = await Hive.openBox('flex_cache');
+    _userBoxInstance = await Hive.openBox(_userBox);
+    _settingsBoxInstance = await Hive.openBox(_settingsBox);
+    _cartBoxInstance = await Hive.openBox(_cartBox);
   }
 
   // User
-  void saveUser(Map<String, dynamic> user) => _box.put('user', user);
-  Map<String, dynamic>? getUser() => _box.get('user');
-  void clearUser() => _box.delete('user');
+  void saveUser(Map<String, dynamic> user) {
+    _userBoxInstance.put('user', user);
+  }
+
+  Map<String, dynamic>? getUser() {
+    return _userBoxInstance.get('user');
+  }
+
+  void clearUser() {
+    _userBoxInstance.delete('user');
+  }
+
+  // Settings
+  bool getDarkMode() {
+    return _settingsBoxInstance.get('darkMode', defaultValue: false);
+  }
+
+  void setDarkMode(bool value) {
+    _settingsBoxInstance.put('darkMode', value);
+  }
+
+  String getLanguage() {
+    return _settingsBoxInstance.get('language', defaultValue: 'ar');
+  }
+
+  void setLanguage(String value) {
+    _settingsBoxInstance.put('language', value);
+  }
 
   // Cart
-  void addToCart(dynamic item) {
-    List cart = _box.get('cart', defaultValue: []);
-    cart.add(item.toJson());
-    _box.put('cart', cart);
-  }
-
   List<dynamic> getCartItems() {
-    final cart = _box.get('cart', defaultValue: []);
-    // Assuming CartItem has fromJson; we'll handle in OrderProvider.
-    return cart;
+    return _cartBoxInstance.get('items', defaultValue: []);
   }
 
-  void saveCartItems(List<dynamic> items) {
-    _box.put('cart', items.map((e) => e.toJson()).toList());
+  void addToCart(dynamic item) {
+    final items = getCartItems();
+    items.add(item);
+    _cartBoxInstance.put('items', items);
   }
 
-  void clearCart() => _box.delete('cart');
+  void removeFromCart(int index) {
+    final items = getCartItems();
+    items.removeAt(index);
+    _cartBoxInstance.put('items', items);
+  }
 
-  // Theme
-  void saveThemeMode(String mode) => _box.put('theme_mode', mode);
-  String? getThemeMode() => _box.get('theme_mode');
+  void clearCart() {
+    _cartBoxInstance.delete('items');
+  }
 }

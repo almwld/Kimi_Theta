@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/wallet_provider.dart';
-import '../../theme/app_theme.dart';
 
 class TransactionsScreen extends StatelessWidget {
   const TransactionsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final walletProvider = Provider.of<WalletProvider>(context);
     final transactions = walletProvider.transactions;
 
@@ -21,9 +19,9 @@ class TransactionsScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final tx = transactions[index];
                 return ListTile(
-                  title: Text(tx.type),
-                  subtitle: Text(tx.description ?? ''),
-                  trailing: Text('${tx.amount} ${tx.currency}'),
+                  title: Text(tx['type'] ?? ''),
+                  subtitle: Text(tx['description'] ?? ''),
+                  trailing: Text('${tx['amount']} ${tx['currency']}'),
                 );
               },
             ),

@@ -669,7 +669,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             onFavoriteTap: () {
-              context.read<ProductProvider>().toggleFavorite(product.id);
+              // TODO: toggleFavorite
             },
             isFavorite: context.read<ProductProvider>().isFavorite(product.id),
           ).animate()
