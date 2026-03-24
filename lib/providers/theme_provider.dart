@@ -3,6 +3,7 @@ import '../services/local_storage_service.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false;
+  bool _isSystemTheme = true;
 
   bool get isDarkMode => _isDarkMode;
 
@@ -12,6 +13,8 @@ class ThemeProvider extends ChangeNotifier {
 
   void _loadSettings() {
     _isDarkMode = LocalStorageService.getDarkMode();
+    _isSystemTheme = LocalStorageService.getLanguage() == 'system';
+    notifyListeners();
   }
 
   void toggleTheme() async {
