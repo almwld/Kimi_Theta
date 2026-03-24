@@ -6,22 +6,27 @@ class LocalStorageService {
   static const String _favoritesBox = 'favoritesBox';
   static const String _cartBox = 'cartBox';
 
+  static LocalStorageService? _instance;
   late Box _userBoxInstance;
   late Box _settingsBoxInstance;
   late Box _favoritesBoxInstance;
   late Box _cartBoxInstance;
 
-  static final LocalStorageService _instance = LocalStorageService._internal();
-  factory LocalStorageService() => _instance;
   LocalStorageService._internal();
 
-  Future<void> init() async {
-    await Hive.initFlutter();
-    _userBoxInstance = await Hive.openBox(_userBox);
-    _settingsBoxInstance = await Hive.openBox(_settingsBox);
-    _favoritesBoxInstance = await Hive.openBox(_favoritesBox);
-    _cartBoxInstance = await Hive.openBox(_cartBox);
+  static Future<LocalStorageService> init() async {
+    if (_instance == null) {
+      await Hive.initFlutter();
+      _instance = LocalStorageService._internal();
+      _instance!._userBoxInstance = await Hive.openBox(_userBox);
+      _instance!._settingsBoxInstance = await Hive.openBox(_settingsBox);
+      _instance!._favoritesBoxInstance = await Hive.openBox(_favoritesBox);
+      _instance!._cartBoxInstance = await Hive.openBox(_cartBox);
+    }
+    return _instance!;
   }
+
+  static LocalStorageService get instance => _instance!;
 
   // ===== المستخدم =====
   Future<void> saveUser(Map<String, dynamic> user) async {
